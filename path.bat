@@ -1,1 +1,0 @@
-explorer "C:\Users\Uczen\AppData\Local"
