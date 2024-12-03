@@ -1,129 +1,157 @@
-const gameContainer = document.getElementById('game-container');
-const playerPaddle = document.getElementById('player-paddle');
-const aiPaddle = document.getElementById('ai-paddle');
-const ball = document.getElementById('ball');
-const playerScoreEl = document.getElementById('player-score');
-const aiScoreEl = document.getElementById('ai-score');
+const gra = document.getElementById('gra');
+const paddleGracz = document.getElementById('paddle-gracz');
+const paddleAi = document.getElementById('paddle-ai');
+const pilka = document.getElementById('pilka');
+const wynikGraczEl = document.getElementById('wynik-gracz');
+const wynikAiEl = document.getElementById('wynik-ai');
 
-// Initial positions and dimensions
-let playerPaddleY = window.innerHeight / 2 - 100;
-let aiPaddleY = window.innerHeight / 2 - 100;
-let ballX = window.innerWidth / 2 - 20;
-let ballY = window.innerHeight / 2 - 20;
+let graczY = window.innerHeight / 2 - 100;
+let aiY = window.innerHeight / 2 - 100;
+let pilkaX = window.innerWidth / 2 - 20;
+let pilkaY = window.innerHeight / 2 - 20;
 
-// Speeds
-let ballSpeedX = 8;
-let ballSpeedY = 4;
-let aiSpeed = 6;
+let predkoscPilkiX = 8;
+let predkoscPilkiY = 4;
+let predkoscAi = 3.5; 
 
-// Scores
-let playerScore = 0;
-let aiScore = 0;
+////////////////////Poziom Trudnosci upp////////////////////////////////
 
-// Bounce count to track when to increase speed
-let bounceCount = 0;
+let wynikGracz = 0;
+let wynikAi = 0;
 
-// Paddle movement
-let playerSpeed = 0;
+let liczbaOdbic = 0;
+
+let predkoscGracza = 0;
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowUp') playerSpeed = -10;
-    if (e.key === 'ArrowDown') playerSpeed = 10;
+    if (e.key === 'ArrowUp') predkoscGracza = -10;
+    if (e.key === 'ArrowDown') predkoscGracza = 10;
 });
 document.addEventListener('keyup', (e) => {
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') playerSpeed = 0;
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') predkoscGracza = 0;
 });
 
-// Update the game state
-function updateGame() {
-    // Player Paddle
-    playerPaddleY += playerSpeed;
-    if (playerPaddleY < 0) playerPaddleY = 0;
-    if (playerPaddleY > window.innerHeight - 200) playerPaddleY = window.innerHeight - 200;
-    playerPaddle.style.top = `${playerPaddleY}px`;
+let filmOdtwarzany = false;
 
-    // AI Paddle
-    if (ballY > aiPaddleY + 100) aiPaddleY += aiSpeed;
-    if (ballY < aiPaddleY + 100) aiPaddleY -= aiSpeed;
-    if (aiPaddleY < 0) aiPaddleY = 0;
-    if (aiPaddleY > window.innerHeight - 200) aiPaddleY = window.innerHeight - 200;
-    aiPaddle.style.top = `${aiPaddleY}px`;
+function aktualizujGre() {
+    if (filmOdtwarzany) return;
 
-    // Ball
-    ballX += ballSpeedX;
-    ballY += ballSpeedY;
+    graczY += predkoscGracza;
+    if (graczY < 0) graczY = 0;
+    if (graczY > window.innerHeight - 200) graczY = window.innerHeight - 200;
+    paddleGracz.style.top = `${graczY}px`;
 
-    // Ball collision with top and bottom walls
-    if (ballY <= 0 || ballY >= window.innerHeight - 40) {
-        ballSpeedY *= -1;
+    if (pilkaY > aiY + 100) aiY += predkoscAi;
+    if (pilkaY < aiY + 100) aiY -= predkoscAi;
+    if (aiY < 0) aiY = 0;
+    if (aiY > window.innerHeight - 200) aiY = window.innerHeight - 200;
+    paddleAi.style.top = `${aiY}px`;
+
+    pilkaX += predkoscPilkiX;
+    pilkaY += predkoscPilkiY;
+
+    if (pilkaY <= 0 || pilkaY >= window.innerHeight - 40) {
+        predkoscPilkiY *= -1;
     }
 
-    // Ball collision with player paddle
     if (
-        ballX <= 60 &&
-        ballY + 40 >= playerPaddleY &&
-        ballY <= playerPaddleY + 200
+        pilkaX <= 60 &&
+        pilkaY + 40 >= graczY &&
+        pilkaY <= graczY + 200
     ) {
-        ballSpeedX *= -1;
-        handleBounce();
+        predkoscPilkiX *= -1;
+        obliczOdbicie();
     }
 
-    // Ball collision with AI paddle
     if (
-        ballX >= window.innerWidth - 100 &&
-        ballY + 40 >= aiPaddleY &&
-        ballY <= aiPaddleY + 200
+        pilkaX >= window.innerWidth - 100 &&
+        pilkaY + 40 >= aiY &&
+        pilkaY <= aiY + 200
     ) {
-        ballSpeedX *= -1;
-        handleBounce();
+        predkoscPilkiX *= -1;
+        obliczOdbicie();
     }
 
-    // Check if player or AI scores
-    if (ballX <= 0) {
-        aiScore++;
-        resetBall();
+    if (pilkaX <= 0) {
+        wynikAi++;
+        resetujPilke();
     }
 
-    if (ballX >= window.innerWidth - 40) {
-        playerScore++;
-        resetBall();
+    if (pilkaX >= window.innerWidth - 40) {
+        wynikGracz++;
+        resetujPilke();
     }
 
-    ball.style.left = `${ballX}px`;
-    ball.style.top = `${ballY}px`;
+    pilka.style.left = `${pilkaX}px`;
+    pilka.style.top = `${pilkaY}px`;
 
-    // Update scores
-    playerScoreEl.textContent = playerScore;
-    aiScoreEl.textContent = aiScore;
+    wynikGraczEl.textContent = wynikGracz;
+    wynikAiEl.textContent = wynikAi;
 
-    // Game loop
-    requestAnimationFrame(updateGame);
+    if (wynikGracz >= 3) {
+        pokazFilm('wygrana');
+        wynikGracz = 0;
+        wynikAi = 0;
+        resetujPilke();
+    } else if (wynikAi >= 3) {
+        pokazFilm('przegrana');
+        wynikGracz = 0;
+        wynikAi = 0;
+        resetujPilke();
+    }
+
+    requestAnimationFrame(aktualizujGre);
 }
 
-// Reset ball to center
-function resetBall() {
-    ballX = window.innerWidth / 2 - 20;
-    ballY = window.innerHeight / 2 - 20;
-    ballSpeedX = 8 * (Math.random() > 0.5 ? 1 : -1); // Reset speed
-    ballSpeedY = 4 * (Math.random() > 0.5 ? 1 : -1); // Reset speed
-    bounceCount = 0; // Reset bounce count
+////////////////// Wyniki do wygranej upppppppppppp///////////////////////////
+
+function resetujPilke() {
+    pilkaX = window.innerWidth / 2 - 20;
+    pilkaY = window.innerHeight / 2 - 20;
+    predkoscPilkiX = 8 * (Math.random() > 0.5 ? 1 : -1);
+    predkoscPilkiY = 4 * (Math.random() > 0.5 ? 1 : -1);
+    liczbaOdbic = 0;
 }
 
-// Increase ball speed every 2 bounces
-function handleBounce() {
-    bounceCount++;
-    if (bounceCount % 2 === 0) {
-        ballSpeedX *= 1.1; // Increase horizontal speed
-        ballSpeedY *= 1.1; // Increase vertical speed
+function obliczOdbicie() {
+    liczbaOdbic++;
+    if (liczbaOdbic % 2 === 0) {
+        predkoscPilkiX *= 1.1;
+        predkoscPilkiY *= 1.1;
     }
 }
+///////////////////>>>> Film koncowy <<<<<//////////////////////////////
+function pokazFilm(wynik) {
+    if (filmOdtwarzany) return;
 
-// Resize paddles and ball on window resize
+    filmOdtwarzany = true;
+
+    const film = document.createElement('video');
+    film.src = wynik === 'wygrana' ? 'wygrana.mp4' : 'przegrana.mp4';
+    film.autoplay = true;
+    film.style.position = 'absolute';
+    film.style.top = '50%';
+    film.style.left = '50%';
+    film.style.transform = 'translate(-50%, -50%)';
+    film.style.zIndex = 10;
+
+    film.onplay = () => {
+        console.log('Film jest odtwarzany');
+    };
+
+    film.onended = () => {
+        filmOdtwarzany = false;
+        gra.removeChild(film);
+        resetujGre();
+    };
+
+    gra.appendChild(film);
+}
+
 window.addEventListener('resize', () => {
-    playerPaddleY = window.innerHeight / 2 - 100;
-    aiPaddleY = window.innerHeight / 2 - 100;
-    resetBall();
+    graczY = window.innerHeight / 2 - 100;
+    aiY = window.innerHeight / 2 - 100;
+    resetujPilke();
 });
 
-// Start the game
-resetBall();
-updateGame();
+resetujPilke();
+aktualizujGre();
