@@ -4,14 +4,14 @@ body {
     overflow: hidden;
 }
 
-#game-container {
+#gra {
     position: relative;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
 }
 
-#background {
+#tlo {
     position: absolute;
     top: 0;
     left: 0;
@@ -20,7 +20,7 @@ body {
     z-index: 0;
 }
 
-#scoreboard {
+#wynik {
     position: absolute;
     top: 20px;
     left: 50%;
@@ -31,24 +31,23 @@ body {
     z-index: 2;
 }
 
-#player-paddle, #ai-paddle {
+#paddle-gracz, #paddle-ai {
     position: absolute;
     width: 40px;
     height: 200px;
     top: 50%;
-    
     z-index: 1;
 }
 
-#player-paddle {
+#paddle-gracz {
     left: 20px;
 }
 
-#ai-paddle {
+#paddle-ai {
     right: 20px;
 }
 
-#ball {
+#pilka {
     position: absolute;
     width: 55px;
     height: 55px;
